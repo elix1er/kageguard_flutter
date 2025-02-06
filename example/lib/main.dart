@@ -204,7 +204,7 @@ Endpoint = indo7.vpnjantit.com:1024
 
 class WireguardService {
   static const platform =
-      MethodChannel('billion.group.wireguard_flutter/wgcontrol');
+      MethodChannel('com.kageguard.flutter/wgcontrol');
 
   Future<Map<String, int>> getDataCounts() async {
     try {

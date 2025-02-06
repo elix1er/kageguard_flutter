@@ -28,9 +28,9 @@ namespace wireguard_flutter
   void WireguardFlutterPlugin::RegisterWithRegistrar(PluginRegistrarWindows *registrar)
   {
     auto channel = make_unique<MethodChannel<EncodableValue>>(
-        registrar->messenger(), "billion.group.wireguard_flutter/wgcontrol", &StandardMethodCodec::GetInstance());
+        registrar->messenger(), "com.kageguard.flutter/wgcontrol", &StandardMethodCodec::GetInstance());
     auto eventChannel = make_unique<EventChannel<EncodableValue>>(
-        registrar->messenger(), "billion.group.wireguard_flutter/wgstage", &StandardMethodCodec::GetInstance());
+        registrar->messenger(), "com.kageguard.flutter/wgstage", &StandardMethodCodec::GetInstance());
 
     auto plugin = make_unique<WireguardFlutterPlugin>();
 

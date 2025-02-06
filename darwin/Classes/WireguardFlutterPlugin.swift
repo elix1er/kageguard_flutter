@@ -28,8 +28,8 @@ public class WireguardFlutterPlugin: NSObject, FlutterPlugin {
         #else
         let messenger = registrar.messenger
         #endif
-        let wireguardMethodChannel = FlutterMethodChannel(name: "billion.group.wireguard_flutter/wgcontrol", binaryMessenger: messenger)
-        let vpnStageE = FlutterEventChannel(name: "billion.group.wireguard_flutter/wgstage", binaryMessenger: messenger)
+        let wireguardMethodChannel = FlutterMethodChannel(name: "com.kageguard.flutter/wgcontrol", binaryMessenger: messenger)
+        let vpnStageE = FlutterEventChannel(name: "com.kageguard.flutter/wgstage", binaryMessenger: messenger)
         
         vpnStageE.setStreamHandler(VPNConnectionHandler())
         wireguardMethodChannel.setMethodCallHandler({(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
