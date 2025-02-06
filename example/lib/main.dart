@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:wireguard_flutter/wireguard_flutter.dart';
+import 'package:kageguard_flutter/wireguard_flutter.dart';
 
 void main() {
   runApp(
@@ -73,7 +73,7 @@ class _MyAppState extends State<MyApp> {
       await wireguard.startVpn(
         serverAddress: '167.235.55.239:51820',
         wgQuickConfig: conf,
-        providerBundleIdentifier: 'com.billion.wireguardvpn.WGExtension',
+        providerBundleIdentifier: 'com.kageguard.flutter.WGExtension',
       );
     } catch (error, stack) {
       debugPrint("failed to start $error\n$stack");
