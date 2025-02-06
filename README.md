@@ -172,6 +172,11 @@ On Linux, you may receive the error `resolvconf: command not found`. This is bec
 
 "WireGuard" is a registered trademark of Jason A. Donenfeld.
 
-Fork from [mysteriumnetwork](https://github.com/mysteriumnetwork/wireguard_dart/) tunnel.
+## Credits
 
-Many Thanks for [Bruno D'Luka](https://github.com/bdlukaa) for help me.
+This project is based on:
+- [wireguard_flutter](https://github.com/Caqil/wireguard_flutter) by Caqil
+- [wireguard_dart](https://github.com/mysteriumnetwork/wireguard_dart) by Mysterium Network
+- Special thanks to [Bruno D'Luka](https://github.com/bdlukaa) for contributions
+
+Licensed under MIT License. See LICENSE file for details.
