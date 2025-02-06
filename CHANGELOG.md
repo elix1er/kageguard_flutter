@@ -1,6 +1,7 @@
-## 0.1.0
+## 1.0.0
 
-* Fixed android connection state.
+* Package renamed to kageguard_flutter
+* Fixed android connection state
 
 ## 0.0.9
 

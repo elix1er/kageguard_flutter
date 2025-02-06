@@ -1,6 +1,6 @@
-# wireguard_flutter
+# kageguard_flutter
 
-A flutter plugin to setup and control VPN connection via [Wireguard](https://www.wireguard.com/) tunnel.
+A flutter plugin to setup and control VPN connection via [WireGuard®](https://www.wireguard.com/) tunnel.
 
 - [Usage](#usage)
   - [Initialize](#initialize)
@@ -10,9 +10,9 @@ A flutter plugin to setup and control VPN connection via [Wireguard](https://www
 - [Supported Platforms](#supported-platforms)
 - [FAQ & Troubleshooting](#faq--troubleshooting)
 
-# Contributing to wireguard_flutter
+# Contributing to kageguard_flutter
 
-Thank you for your interest in contributing to wireguard_flutter! We appreciate your help in making this project better.
+Thank you for your interest in contributing to kageguard_flutter! We appreciate your help in making this project better.
 
 Before you start contributing, please take a moment to read the following guidelines.
 
@@ -38,10 +38,10 @@ Before you start contributing, please take a moment to read the following guidel
 
 ## Usage
 
-To use this plugin, add `wireguard_flutter` or visit [Flutter Tutorial](https://flutterflux.com/).
+To use this plugin, add `kageguard_flutter` or visit [Flutter Tutorial](https://flutterflux.com/).
 
 ```
-flutter pub add wireguard_flutter
+flutter pub add kageguard_flutter
 ```
 
 ### Initialize
