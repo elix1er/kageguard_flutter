@@ -1,3 +1,5 @@
+import 'model/stats.dart';
+
 abstract class WireGuardFlutterInterface {
   Stream<VpnStage> get vpnStageSnapshot;
 
@@ -13,8 +15,8 @@ abstract class WireGuardFlutterInterface {
 
   Future<void> refreshStage();
   Future<VpnStage> stage();
-  Future<bool> isConnected() =>
-      stage().then((stage) => stage == VpnStage.connected);
+  Future<bool> isConnected() => stage().then((stage) => stage == VpnStage.connected);
+  Future<Stats?> getStats();
 }
 
 enum VpnStage {

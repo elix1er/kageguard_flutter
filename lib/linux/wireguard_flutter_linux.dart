@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:process_run/shell.dart';
 
+import '../model/stats.dart';
 import '../wireguard_flutter_platform_interface.dart';
 
 class WireGuardFlutterLinux extends WireGuardFlutterInterface {
@@ -76,8 +77,7 @@ class WireGuardFlutterLinux extends WireGuardFlutterInterface {
     );
     _setStage(VpnStage.disconnecting);
     try {
-      await shell
-          .run('sudo wg-quick down ${configFile?.path ?? (await filePath)}');
+      await shell.run('sudo wg-quick down ${configFile?.path ?? (await filePath)}');
     } catch (e) {
       await refreshStage();
       rethrow;
@@ -113,5 +113,45 @@ class WireGuardFlutterLinux extends WireGuardFlutterInterface {
     final processResultList = await shell.run('sudo wg');
     final process = processResultList.first;
     return process.outLines.any((line) => line.trim() == 'interface: $name');
+  }
+
+  @override
+  Future<Stats?> getStats() async {
+    assert(
+      (await isConnected()),
+      'Bad state: vpn has not been started. Call startVpn',
+    );
+
+    final processResultList = await shell.run('sudo wg show $name');
+    final process = processResultList.first;
+    final lines = process.outLines;
+
+    if (lines.isEmpty) return null;
+
+    num totalDownload = 0;
+    num totalUpload = 0;
+    int lastHandshake = 0;
+
+    for (var line in lines) {
+      if (line.contains('transfer:')) {
+        var transferData = line.split(': ')[1].split(', ');
+        totalDownload += int.tryParse(transferData[0].split(' ')[0].trim()) ?? 0;
+        totalUpload += int.tryParse(transferData[1].split(' ')[0].trim()) ?? 0;
+      }
+      if (line.contains('latest handshake:')) {
+        var handshakeData = line.split(': ')[1].trim();
+        if (handshakeData != '0') {
+          // Parse the date and time
+          var dateTime = DateTime.parse(handshakeData);
+          lastHandshake = dateTime.millisecondsSinceEpoch;
+        }
+      }
+    }
+
+    return Stats(
+      totalDownload: totalDownload,
+      totalUpload: totalUpload,
+      lastHandshake: lastHandshake,
+    );
   }
 }

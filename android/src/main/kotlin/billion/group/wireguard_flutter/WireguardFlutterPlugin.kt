@@ -37,22 +37,24 @@ const val METHOD_EVENT_NAME = "billion.group.wireguard_flutter/wgstage"
 
 class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     PluginRegistry.ActivityResultListener {
-    private lateinit var channel: MethodChannel
-    private lateinit var events: EventChannel
+
     private lateinit var tunnelName: String
-    private val futureBackend = CompletableDeferred<Backend>()
-    private var vpnStageSink: EventChannel.EventSink? = null
     private val scope = CoroutineScope(Job() + Dispatchers.Main.immediate)
-    private var backend: Backend? = null
     private var havePermission = false
     private lateinit var context: Context
     private var activity: Activity? = null
     private var config: com.wireguard.config.Config? = null
-    private var tunnel: WireGuardTunnel? = null
     private val TAG = "NVPN"
     var isVpnChecked = false
     companion object {
+        private val futureBackend = CompletableDeferred<Backend>()
         private var state: String = "no_connection"
+        private var tunnel: WireGuardTunnel? = null
+        private var backend: Backend? = null
+        private lateinit var channel: MethodChannel
+        private lateinit var events: EventChannel
+        private var vpnStageSink: EventChannel.EventSink? = null
+
 
         fun getStatus(): String {
             return state
@@ -137,9 +139,9 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onMethodCall(call: MethodCall, result: Result) {
 
         when (call.method) {
-            "initialize" -> setupTunnel(call.argument<String>("localizedDescription").toString(), result)
+            "initialize" -> setupTunnel(call.argument<String>("localizedDescription") ?: "", result)
             "start" -> {
-                connect(call.argument<String>("wgQuickConfig").toString(), result)
+                connect(call.argument<String>("wgQuickConfig") ?: "", result)
 
                 if (!isVpnChecked) {
                     if (isVpnActive()) {
@@ -163,12 +165,20 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 checkPermission()
                 result.success(null)
             }
-            "getDownloadData" -> {
-                getDownloadData(result)
+            "getStats" -> {
+                if (tunnelName.isEmpty()) {
+                    println("tunnel name is empty when trying to get stats")
+                    flutterError(result, "Invalid argument type for tunnel name")
+                } else {
+                    handleGetStats(result)
+                }
             }
-            "getUploadData" -> {
-                getUploadData(result)
-            }
+            // "getDownloadData" -> {
+            //     getDownloadData(result)
+            // }
+            // "getUploadData" -> {
+            //     getUploadData(result)
+            // }
             else -> flutterNotImplemented(result)
         }
     }
@@ -290,29 +300,60 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         }
     }
 
-    private fun getDownloadData(result: Result) {
+    private fun handleGetStats(result: MethodChannel.Result) {
+
+        if (tunnelName.isEmpty()) {
+            flutterError(result, "Provide tunnel name to get statistics")
+            return
+        }
+
         scope.launch(Dispatchers.IO) {
             try {
-                val downloadData = futureBackend.await().getTransferData(tunnel(tunnelName)).rxBytes
-                flutterSuccess(result, downloadData)
+                val stats = futureBackend.await().getStatistics(tunnel(tunnelName))
+
+                var latestHandshake = 0L
+
+                for (key in stats.peers()) {
+                    val peerStats = stats.peer(key)
+                    if (peerStats != null && peerStats.latestHandshakeEpochMillis > latestHandshake) {
+                        latestHandshake = peerStats.latestHandshakeEpochMillis
+                    }
+                }
+                flutterSuccess(result, Klaxon().toJsonString(
+                    Stats(stats.totalRx(), stats.totalTx(), latestHandshake)
+                ))
+            } catch (e: BackendException) {
+                Log.e(TAG, "handleGetStats - BackendException - ERROR - ${e.reason}")
+                flutterError(result, e.reason.toString())
             } catch (e: Throwable) {
-                Log.e(TAG, "getDownloadData - ERROR - ${e.message}")
-                flutterError(result, e.message.toString())
+                Log.e(TAG, "handleGetStats - Can't get stats: $e")
             }
         }
     }
 
-    private fun getUploadData(result: Result) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                val uploadData = futureBackend.await().getTransferData(tunnel(tunnelName)).txBytes
-                flutterSuccess(result, uploadData)
-            } catch (e: Throwable) {
-                Log.e(TAG, "getUploadData - ERROR - ${e.message}")
-                flutterError(result, e.message.toString())
-            }
-        }
-    }
+    // private fun getDownloadData(result: Result) {
+    //     scope.launch(Dispatchers.IO) {
+    //         try {
+    //             val downloadData = futureBackend.await().getTransferData(tunnel(tunnelName)).rxBytes
+    //             flutterSuccess(result, downloadData)
+    //         } catch (e: Throwable) {
+    //             Log.e(TAG, "getDownloadData - ERROR - ${e.message}")
+    //             flutterError(result, e.message.toString())
+    //         }
+    //     }
+    // }
+
+    // private fun getUploadData(result: Result) {
+    //     scope.launch(Dispatchers.IO) {
+    //         try {
+    //             val uploadData = futureBackend.await().getTransferData(tunnel(tunnelName)).txBytes
+    //             flutterSuccess(result, uploadData)
+    //         } catch (e: Throwable) {
+    //             Log.e(TAG, "getUploadData - ERROR - ${e.message}")
+    //             flutterError(result, e.message.toString())
+    //         }
+    //     }
+    // }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
@@ -341,3 +382,9 @@ class WireGuardTunnel(
     }
 
 }
+
+class Stats(
+    val totalDownload: Long,
+    val totalUpload: Long,
+    val lastHandshake: Long
+)

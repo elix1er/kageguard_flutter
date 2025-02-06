@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:wireguard_flutter/linux/wireguard_flutter_linux.dart';
 import 'package:wireguard_flutter/wireguard_flutter_method_channel.dart';
-
+import 'model/stats.dart';
 import 'wireguard_flutter_platform_interface.dart';
 
 export 'wireguard_flutter_platform_interface.dart' show VpnStage;
@@ -59,4 +59,7 @@ class WireGuardFlutter extends WireGuardFlutterInterface {
 
   @override
   Future<VpnStage> stage() => _instance.stage();
+
+  @override
+  Future<Stats?> getStats() => _instance.getStats();
 }
